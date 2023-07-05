@@ -139,14 +139,30 @@ void rasterize(Vec2i p0, Vec2i p1, TGAImage &image, TGAColor color, int ybuffer[
     }
 }
 
-void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color){
-    Vec2f bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+
+void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
+    Vec2f bboxmin( std::numeric_limits<float>::max(),  std::numeric_limits<float>::max());
     Vec2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
     Vec2f clamp(image.get_width()-1, image.get_height()-1);
-    for(int i=0;i<3;i++){
-        for(int j=0;j<2;j++){
-            bboxmin[j] = std::max(0.f,      std::min(bboxmin[j], pts[i][j]));
-            bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]));
+    for (int i=0; i<3; i++) {
+        for (int j=0; j<2; j++) {
+            bboxmin.x = std::max(0.f,      std::min(bboxmin.x, pts[i].x));
+            bboxmin.y = std::max(0.f,      std::min(bboxmin.y, pts[i].y));
+            bboxmax.x = std::min(clamp.x, std::max(bboxmax.x, pts[i].x));
+            bboxmax.y = std::min(clamp.y, std::max(bboxmax.y, pts[i].y));
+        }
+    }
+    Vec3f P;
+    for (P.x=bboxmin.x; P.x<=bboxmax.x; P.x++) {
+        for (P.y=bboxmin.y; P.y<=bboxmax.y; P.y++) {
+            Vec3f bc_screen  = barycentric(pts[0], pts[1], pts[2], P);
+            if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
+            P.z = 0;
+            for (int i=0; i<3; i++) P.z += pts[i][2]*bc_screen[i];
+            if (zbuffer[int(P.x+P.y*width)]<P.z) {
+                zbuffer[int(P.x+P.y*width)] = P.z;
+                image.set(P.x, P.y, color);
+            }
         }
     }
 }
