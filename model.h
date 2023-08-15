@@ -13,9 +13,9 @@
 class Model {
 private:
     std::vector<Vec3f> verts_;
+    std::vector<std::vector<Vec3i> > faces_; // attention, this Vec3i means vertex/uv/normal
     std::vector<Vec3f> norms_;
     std::vector<Vec2f> uv_;
-    std::vector<std::vector<Vec3i> > faces_; // attention, this Vec3i means vertex/uv/normal
     TGAImage diffusemap_;
     void load_texture(std::string filename, const char *suffix, TGAImage &img);
 
