@@ -20,12 +20,12 @@ Model::Model(const char *filename) : verts_(), faces_(), norms_(), uv_() {
             for (int i=0;i<3;i++) iss >> v[i];
             verts_.push_back(v);
         } else if (!line.compare(0, 3, "vn ")) {
-            iss >> trash;
+            iss >> trash >> trash;
             Vec3f n;
             for (int i=0;i<3;i++) iss >> n[i];
             norms_.push_back(n);
         } else if (!line.compare(0, 3, "vt ")) {
-            iss >> trash;
+            iss >> trash >> trash;
             Vec2f uv;
             for (int i=0;i<2;i++) iss >> uv[i];
             uv_.push_back(uv);
