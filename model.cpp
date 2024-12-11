@@ -20,16 +20,16 @@ Model::Model(const char *filename) : verts_(), faces_(), norms_(), uv_() {
             for (int i=0;i<3;i++) iss >> v[i];
             verts_.push_back(v);
         } else if (!line.compare(0, 3, "vn ")) {
-            iss >> trash;
+            iss >> trash >> trash;
             Vec3f n;
             for (int i=0;i<3;i++) iss >> n[i];
             norms_.push_back(n);
         } else if (!line.compare(0, 3, "vt ")) {
-            iss >> trash;
+            iss >> trash >> trash;
             Vec2f uv;
             for (int i=0;i<2;i++) iss >> uv[i];
             uv_.push_back(uv);
-        } else if (!line.compare(0, 2, "f ")) {
+        }  else if (!line.compare(0, 2, "f ")) {
             std::vector<Vec3i> f;
             Vec3i tmp;
             iss >> trash;
@@ -68,7 +68,7 @@ Vec3f Model::vert(int i) {
 void Model::load_texture(std::string filename, const char *suffix, TGAImage &img) {
     std::string texfile(filename);
     size_t dot = texfile.find_last_of(".");
-    if(dot!=std::string::npos){
+    if (dot!=std::string::npos) {
         texfile = texfile.substr(0,dot) + std::string(suffix);
         std::cerr << "texture file " << texfile << " loading " << (img.read_tga_file(texfile.c_str()) ? "ok" : "failed") << std::endl;
         img.flip_vertically();
