@@ -28,6 +28,7 @@ public:
     std::vector<int> face(int idx);
     TGAColor diffuse(Vec2i uv);
     Vec2i uv(int iface, int nvert);
+    Vec3f norm(int iface, int nvert);
 };
 
 
