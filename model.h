@@ -7,6 +7,7 @@
 
 
 #include <vector>
+#include <string>
 #include "geometry.h"
 #include "tgaimage.h"
 
@@ -17,6 +18,8 @@ private:
     std::vector<Vec3f> norms_;
     std::vector<Vec2f> uv_;
     TGAImage diffusemap_;
+    TGAImage normalmap_;
+    TGAImage specularmap_;
     void load_texture(std::string filename, const char *suffix, TGAImage &img);
 
 public:
@@ -24,11 +27,14 @@ public:
     ~Model();
     int nverts();
     int nfaces();
-    Vec3f vert(int i);
     std::vector<int> face(int idx);
     TGAColor diffuse(Vec2i uv);
     Vec2i uv(int iface, int nvert);
     Vec3f norm(int iface, int nvert);
+    Vec3f norm(Vec2i uv);
+    Vec3f vert(int i);
+    Vec3f vert(int iface, int nthvert);
+    float specular(Vec2i uv);
 };
 
 
