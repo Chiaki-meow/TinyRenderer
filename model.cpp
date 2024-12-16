@@ -92,12 +92,12 @@ Vec2i Model::uv(int iface, int nvert) {
     return Vec2i(uv_[idx].x * diffusemap_.get_width(), uv_[idx].y * diffusemap_.get_height());
 }
 
-Vec3f Model::norm(int iface, int nvert) {
+Vec3f Model::normal(int iface, int nvert) {
     int idx = faces_[iface][nvert][2]; // find normal index by faces
     return norms_[idx].normalize();
 }
 
-Vec3f Model::norm(Vec2i uv) {
+Vec3f Model::normal(Vec2i uv) {
     int idx = uv.x + uv.y * normalmap_.get_width();
     Vec3f res;
     for (int i = 0; i < 3; i++)

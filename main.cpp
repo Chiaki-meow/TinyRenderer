@@ -15,10 +15,10 @@ const TGAColor blue = TGAColor(0, 0, 255, 255);
 
 const int width = 800;
 const int height = 800;
-Model *model = NULL;
+Model *model = nullptr;
 
-Vec3f light_dir(1, -1, 1);
-Vec3f eye(1, 1, 3);
+Vec3f light_dir(1, 1, 1);
+Vec3f eye(0, -1, 3);
 Vec3f center(0, 0, 0);
 Vec3f up(0, 1, 0);
 
@@ -26,14 +26,34 @@ struct GouraudShader : public IShader {
     Vec3f varying_intensity;
 
     virtual Vec4f vertex(int iface, int nthvert) {
-        varying_intensity[nthvert] = std::max(0.f, model->norm(iface, nthvert) * light_dir);
+        varying_intensity[nthvert] = std::max(0.f, model->normal(iface, nthvert) * light_dir);
+        Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
+        gl_Vertex = Viewport * Projection * ModelView * gl_Vertex;
+        return gl_Vertex;
+    }
+
+    virtual bool fragment(Vec3f bar, TGAColor &color) {
+        float intensity = varying_intensity * bar;
+        color = TGAColor(255, 255, 255) * intensity;
+        return false;
+    }
+};
+
+struct Shader : public IShader {
+    Vec3f varying_intensity;        // v2f params
+    mat<2, 3, float> varying_uv;    // v2f params
+
+    virtual Vec4f vertex(int iface, int nthvert) {
+        varying_intensity[nthvert] = std::max(0.f, model->normal(iface, nthvert) * light_dir);
+        varying_uv.set_col(nthvert, model->uv(iface, nthvert));
         Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
         return Viewport * Projection * ModelView * gl_Vertex;
     }
 
     virtual bool fragment(Vec3f bar, TGAColor &color) {
         float intensity = varying_intensity * bar;
-        color = TGAColor(255, 255, 255) * intensity;
+        Vec2f uv = varying_uv * bar;
+        color = model->diffuse(uv) * intensity;
         return false;
     }
 };
@@ -48,6 +68,7 @@ int main(int argc, char **argv) {
     lookat(eye, center, up);
     viewport(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
     projection(-1.f / (eye - center).norm());
+    light_dir.normalize();
 
     TGAImage image(width, height, TGAImage::RGB);
     TGAImage zbuffer(width, height, TGAImage::GRAYSCALE);
