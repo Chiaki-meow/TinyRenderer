@@ -23,5 +23,6 @@ struct IShader {
 };
 
 void triangle(Vec4f *pts, IShader &shader, TGAImage &image, TGAImage &zbuffer);
+void triangle(mat<4, 3, float> &clipc, IShader &shader, TGAImage &image, float *zbuffer);
 
 #endif //TINYRENDERER_MY_GL_H

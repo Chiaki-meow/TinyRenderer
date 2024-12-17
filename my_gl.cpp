@@ -17,11 +17,11 @@ void viewport(int x, int y, int w, int h) {
     Viewport = Matrix::identity();
     Viewport[0][3] = x + w / 2.f;
     Viewport[1][3] = y + h / 2.f;
-    Viewport[2][3] = 255.f / 2.f;
+    Viewport[2][3] = 1.f;
 
     Viewport[0][0] = w / 2.f;
     Viewport[1][1] = h / 2.f;
-    Viewport[2][2] = 255.f / 2.f;
+    Viewport[2][2] = 0.f;
 }
 
 void projection(float coeff) {
@@ -83,3 +83,40 @@ void triangle(Vec4f *pts, IShader &shader, TGAImage &image, TGAImage &zbuffer) {
         }
     }
 }
+
+
+void triangle(mat<4, 3, float> &clipc, IShader &shader, TGAImage &image, float *zbuffer) {
+    mat<3, 4, float> pts = (Viewport * clipc).transpose();
+    mat<3, 2, float> pts2;
+    for (int i = 0; i < 3; i++)
+        pts2[i] = proj<2>(pts[i] / pts[i][3]);
+
+    Vec2f bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+    Vec2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
+    Vec2f clamp(image.get_width() - 1, image.get_height() - 1);
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 2; j++) {
+            bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts2[i][j]));
+            bboxmin[j] = std::max(0.0f, std::min(bboxmin[j], pts2[i][j]));
+        }
+    }
+    Vec2i P;
+    TGAColor color;
+    for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
+        for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
+            Vec3f bc_screen = barycentric(pts2[0], pts2[1], pts2[2], P);
+            Vec3f bc_clip = Vec3f(bc_screen.x / pts[0][3], bc_screen.y / pts[1][3], bc_screen.z / pts[2][3]);
+            bc_clip = bc_clip / (bc_clip.x + bc_clip.y + bc_clip.z);
+            float frag_depth = clipc[2] * bc_clip;
+            if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0 ||
+                zbuffer[P.x + P.y * image.get_width()] > frag_depth)
+                continue;
+            bool discard = shader.fragment(bc_clip, color);
+            if (!discard) {
+                zbuffer[P.x + P.y * image.get_width()] = frag_depth;
+                image.set(P.x, P.y, color);
+            }
+        }
+    }
+}
+
