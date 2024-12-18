@@ -85,13 +85,13 @@ void Model::load_texture(std::string filename, const char *suffix, TGAImage &img
     }
 }
 
-TGAColor Model::diffuse(Vec2i uv) {
+TGAColor Model::diffuse(Vec2f uvf) {
+    Vec2i uv(uvf[0] * diffusemap_.get_width(), uvf[1] * diffusemap_.get_height());
     return diffusemap_.get(uv.x, uv.y);
 }
 
-Vec2i Model::uv(int iface, int nvert) {
-    int idx = faces_[iface][nvert][1]; // find uv index by faces.
-    return Vec2i(uv_[idx].x * diffusemap_.get_width(), uv_[idx].y * diffusemap_.get_height());
+Vec2f Model::uv(int iface, int nvert) {
+    return uv_[faces_[iface][nvert][1]];
 }
 
 Vec3f Model::normal(int iface, int nvert) {
@@ -99,15 +99,16 @@ Vec3f Model::normal(int iface, int nvert) {
     return norms_[idx].normalize();
 }
 
-Vec3f Model::normal(Vec2i uv) {
-    int idx = uv.x + uv.y * normalmap_.get_width();
+Vec3f Model::normal(Vec2f uvf) {
+    Vec2i uv(uvf[0] * normalmap_.get_width(), uvf[1] * normalmap_.get_height());
+    TGAColor color = normalmap_.get(uv.x, uv.y);
     Vec3f res;
     for (int i = 0; i < 3; i++)
-        res[2 - i] = (float) normalmap_.buffer()[idx * 3 + i] / 255.f * 2.f - 1.f;
+        res[2 - i] = (float) color[i] / 255.f * 2.f - 1.f;
     return res;
 }
 
-float Model::specular(Vec2i uv) {
-    Vec2i uv_(uv[0] * specularmap_.get_width(), uv[1] * specularmap_.get_height());
-    return specularmap_.get(uv_[0], uv_[1])[0] / 1.f;
+float Model::specular(Vec2f uvf) {
+    Vec2i uv(uvf[0] * specularmap_.get_width(), uvf[1] * specularmap_.get_height());
+    return specularmap_.get(uv[0], uv[1])[0] / 1.f;
 }

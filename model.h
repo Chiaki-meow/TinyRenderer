@@ -28,13 +28,13 @@ public:
     int nverts();
     int nfaces();
     std::vector<int> face(int idx);
-    TGAColor diffuse(Vec2i uv);
-    Vec2i uv(int iface, int nvert);
+    TGAColor diffuse(Vec2f uv);
+    Vec2f uv(int iface, int nvert);
     Vec3f normal(int iface, int nvert);
-    Vec3f normal(Vec2i uv);
+    Vec3f normal(Vec2f uv);
     Vec3f vert(int i);
     Vec3f vert(int iface, int nthvert);
-    float specular(Vec2i uv);
+    float specular(Vec2f uv);
 };
 
 
