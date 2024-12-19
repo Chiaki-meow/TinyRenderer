@@ -45,7 +45,7 @@ struct Shader : public IShader {
     virtual Vec4f vertex(int iface, int nthvert) {
         varying_uv.set_col(nthvert, model->uv(iface, nthvert));
         Vec4f gl_Vertex = Projection * ModelView * embed<4>(model->vert(iface, nthvert));
-        varying_tri.set_col(nthvert, (gl_Vertex / gl_Vertex[3]));
+        varying_tri.set_col(nthvert, gl_Vertex);
         return gl_Vertex;
     }
 
@@ -120,29 +120,35 @@ int main(int argc, char **argv) {
     viewport(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
     projection(-1.f / (eye - center).norm());
 
+
 //    AOShader aoshader;
 //    aoshader.aoimage.read_tga_file("occlusion.tga");
 //    aoshader.aoimage.flip_vertically();
-//    for (int i = 0; i < model->nfaces(); i++) {
-//        for (int j = 0; j < 3; j++) {
-//            aoshader.vertex(i, j);
+//    for (int i = width * height; i--; shadowbuffer[i] = zbuffer[i] = -std::numeric_limits<float>::max());
+//    for (int m = 1; m < argc; m++) {
+//        model = new Model(argv[m]);
+//        for (int i = 0; i < model->nfaces(); i++) {
+//            for (int j = 0; j < 3; j++) {
+//                aoshader.vertex(i, j);
+//            }
+//            triangle(aoshader.varying_tri, aoshader, frame, zbuffer);
 //        }
-//        triangle(aoshader.varying_tri, aoshader, frame, zbuffer);
+//        frame.flip_vertically();
+//        frame.write_tga_file("framebuffer.tga");
+//        delete model;
+//        return 0;
 //    }
-//    frame.flip_vertically();
-//    frame.write_tga_file("framebuffer.tga");
-//    return 0;
 
-
-    const int nrenders = 1;
-    for (int iter = 0; iter <= nrenders; iter++) {
+    const int nrenders = 100;
+    for (int iter = 1; iter <= nrenders; iter++) {
         std::cerr << iter << " from " << nrenders << std::endl;
 
         for (int i = 0; i < 3; i++) up[i] = (float) rand() / (float) RAND_MAX;
         eye = rand_point_on_unit_sphere();
         eye.y = std::abs(eye.y);
+        std::cout << "v " << eye << std::endl;
 
-        for (int i = width * height; i--; zbuffer[i] = -std::numeric_limits<float>::max());
+        for (int i = width * height; i--; shadowbuffer[i] = zbuffer[i] = -std::numeric_limits<float>::max());
 
         lookat(eye, center, up);
         viewport(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
