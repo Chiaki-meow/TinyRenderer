@@ -17,11 +17,11 @@ void viewport(int x, int y, int w, int h) {
     Viewport = Matrix::identity();
     Viewport[0][3] = x + w / 2.f;
     Viewport[1][3] = y + h / 2.f;
-    Viewport[2][3] = depth / 2.f;
+    Viewport[2][3] = 1.f;
 
     Viewport[0][0] = w / 2.f;
     Viewport[1][1] = h / 2.f;
-    Viewport[2][2] = depth / 2.f;
+    Viewport[2][2] = 0;
 }
 
 void projection(float coeff) {
@@ -77,7 +77,7 @@ void triangle(Vec4f *pts, IShader &shader, TGAImage &image, TGAImage &zbuffer) {
             float w = pts[0][3] * c.x + pts[1][3] * c.y + pts[2][3] * c.z;
             int frag_depth = std::max(0, std::min(255, int(z / w + .5)));
             if (c.x < 0 || c.y < 0 || c.z < 0 || zbuffer.get(P.x, P.y)[0] > frag_depth) continue;
-            bool discard = shader.fragment(c, color);
+            bool discard = shader.fragment(Vec3f(P.x, P.y, frag_depth), c, color);
             if (!discard) {
                 zbuffer.set(P.x, P.y, TGAColor(frag_depth));
                 image.set(P.x, P.y, color);
@@ -106,7 +106,7 @@ void triangle(Vec4f *pts, IShader &shader, TGAImage &image, float *zbuffer) {
             int frag_depth = z / w;
 //            float frag_depth = std::max(0.f, std::min(depth, float(z / w + .5)));
             if (c.x < 0 || c.y < 0 || c.z < 0 || zbuffer[P.x + P.y * image.get_width()] > frag_depth) continue;
-            bool discard = shader.fragment(c, color);
+            bool discard = shader.fragment(Vec3f(P.x, P.y, frag_depth), c, color);
             if (!discard) {
                 zbuffer[P.x + P.y * image.get_width()] = frag_depth;
                 image.set(P.x, P.y, color);
@@ -142,7 +142,7 @@ void triangle(mat<4, 3, float> &clipc, IShader &shader, TGAImage &image, float *
             if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0 ||
                 zbuffer[P.x + P.y * image.get_width()] > frag_depth)
                 continue;
-            bool discard = shader.fragment(bc_clip, color);
+            bool discard = shader.fragment(Vec3f(P.x, P.y, frag_depth), bc_clip, color);
             if (!discard) {
                 zbuffer[P.x + P.y * image.get_width()] = frag_depth;
                 image.set(P.x, P.y, color);
