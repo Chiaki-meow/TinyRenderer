@@ -44,8 +44,8 @@ Model::Model(const char *filename) : verts_(), faces_(), norms_(), uv_() {
               << norms_.size() << std::endl;
     load_texture(filename, "_diffuse.tga", diffusemap_);
     // TODO: if tangent
-//    load_texture(filename, "_nm_tangent.tga", normalmap_);
-    load_texture(filename, "_nm.tga", normalmap_);
+    load_texture(filename, "_nm_tangent.tga", normalmap_);
+//    load_texture(filename, "_nm.tga", normalmap_);
     load_texture(filename, "_spec.tga", specularmap_);
 }
 
